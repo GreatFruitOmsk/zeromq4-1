@@ -65,6 +65,12 @@
 #include "ipc_address.hpp"
 #include "tcp_address.hpp"
 #include "tipc_address.hpp"
+
+#if defined ZMQ_HAVE_VMCI
+#include "vmci_address.hpp"
+#include "vmci_listener.hpp"
+#endif
+
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
 #endif
@@ -206,7 +212,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     &&  protocol_ != "pgm"
     &&  protocol_ != "epgm"
     &&  protocol_ != "tipc"
-    &&  protocol_ != "norm") {
+    &&  protocol_ != "norm"
+    &&  protocol_ != "vmci") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -238,6 +245,13 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     // TIPC transport is only available on Linux.
 #if !defined ZMQ_HAVE_TIPC
     if (protocol_ == "tipc") {
+        errno = EPROTONOSUPPORT;
+        return -1;
+    }
+#endif
+
+#if !defined ZMQ_HAVE_VMCI
+    if (protocol_ == "vmci") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -450,6 +464,24 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 #endif
+#if defined ZMQ_HAVE_VMCI
+    if (protocol == "vmci") {
+        vmci_listener_t *listener = new (std::nothrow) vmci_listener_t (
+            io_thread, this, options);
+        alloc_assert (listener);
+        int rc = listener->set_address (address.c_str ());
+        if (rc != 0) {
+            delete listener;
+            event_bind_failed (address, zmq_errno ());
+            return -1;
+        }
+
+        listener->get_address (last_endpoint);
+
+        add_endpoint (last_endpoint.c_str(), (own_t *) listener, NULL);
+        return 0;
+    }
+#endif
 
     zmq_assert (false);
     return -1;
@@ -591,7 +623,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         return -1;
     }
 
-    address_t *paddr = new (std::nothrow) address_t (protocol, address);
+    address_t *paddr = new (std::nothrow) address_t (protocol, address, this->get_ctx ());
     alloc_assert (paddr);
 
     //  Resolve address (if needed by the protocol)
@@ -665,6 +697,18 @@ int zmq::socket_base_t::connect (const char *addr_)
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str());
+        if (rc != 0) {
+            delete paddr;
+            return -1;
+        }
+    }
+#endif
+#if defined ZMQ_HAVE_VMCI
+    else
+    if (protocol == "vmci") {
+        paddr->resolved.vmci_addr = new (std::nothrow) vmci_address_t (this->get_ctx ());
+        alloc_assert (paddr->resolved.vmci_addr);
+        int rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
         if (rc != 0) {
             delete paddr;
             return -1;

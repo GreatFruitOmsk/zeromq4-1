@@ -67,23 +67,23 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports.
 
 
-ZMQ_CONNECT_RID: Assign the next outbound connection id 
+ZMQ_CONNECT_RID: Assign the next outbound connection id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected 
-via the zmq_connect() call, and immediately readies that connection for 
+The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected
+via the zmq_connect() call, and immediately readies that connection for
 data transfer with the named id.  This option applies only to the first
-subsequent call to zmq_connect(), calls thereafter use default connection 
-behavior. 
+subsequent call to zmq_connect(), calls thereafter use default connection
+behavior.
 
-Typical use is to set this socket option ahead of each zmq_connect() attempt 
-to a new host. Each connection MUST be assigned a unique name. Assigning a 
-name that is already in use is not allowed. 
+Typical use is to set this socket option ahead of each zmq_connect() attempt
+to a new host. Each connection MUST be assigned a unique name. Assigning a
+name that is already in use is not allowed.
 
-Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it 
-allows for immediate sending to peers. Outbound id framing requirements 
+Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it
+allows for immediate sending to peers. Outbound id framing requirements
 for ROUTER and STREAM sockets apply.
 
-The peer id should be from 1 to 255 bytes long and MAY NOT start with 
+The peer id should be from 1 to 255 bytes long and MAY NOT start with
 binary zero.
 
 [horizontal]
@@ -893,6 +893,55 @@ Option value type:: int
 Option value unit:: boolean
 Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_VMCI_BUFFER_SIZE: Set buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_SIZE` option shall set the size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 65546
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MIN_SIZE: Set min buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MIN_SIZE` option shall set the min size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 128
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MAX_SIZE: Set max buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MAX_SIZE` option shall set the max size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 262144
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_CONNECT_TIMEOUT: Set connection timeout of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_CONNECT_TIMEOUT` option shall set connection timeout
+for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all, when using VMCI transport
+
 
 RETURN VALUE
 ------------

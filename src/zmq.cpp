@@ -1091,6 +1091,10 @@ int zmq_has (const char *capability)
     if (strcmp (capability, "gssapi") == 0)
         return true;
 #endif
+#if defined (ZMQ_HAVE_VMCI)
+    if (strcmp (capability, "vmci") == 0)
+        return true;
+#endif
     //  Whatever the application asked for, we don't have
     return false;
 }
